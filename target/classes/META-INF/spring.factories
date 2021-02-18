@@ -1,3 +1,0 @@
-# Bootstrap Configuration
-org.springframework.cloud.bootstrap.BootstrapConfiguration=\
-  com.baletu.datasync.config.BootstrapConfiguration
