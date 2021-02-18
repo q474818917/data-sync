@@ -1,0 +1,37 @@
+dataSourceKey: defaultDS
+destination: example
+groupId: g1
+outerAdapterKey: mysql1
+concurrent: true
+dbMapping:
+  database: canal_manager
+  table: canal_user
+  sql: "select * from user"
+  targetTable: person
+  targetPk:
+    id: id
+#  mapAll: true
+  targetColumns:
+    id:
+    # user_id: idGen
+    first_name:
+  etlCondition: "where c_time>={}"
+  commitBatch: 3000 # 批量提交的大小
+
+useMapping:
+  table: user_ref
+  columns:
+     id:
+     s_user_id:
+     d_user_id:
+     source: 1
+
+## Mirror schema synchronize config
+#dataSourceKey: defaultDS
+#destination: example
+#groupId: g1
+#outerAdapterKey: mysql1
+#concurrent: true
+#dbMapping:
+#  mirrorDb: true
+#  database: mytest
