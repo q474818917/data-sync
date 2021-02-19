@@ -4,6 +4,7 @@ import com.baletu.datasync.config.ApplicationConfig;
 import com.baletu.datasync.config.DestDataSourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -19,6 +20,7 @@ public class DataSyncService {
 
     private volatile boolean    running = false;
 
+    @Autowired
     private DataSyncHandle dataSyncHandle;
 
     @PostConstruct
@@ -30,7 +32,6 @@ public class DataSyncService {
             logger.info("## syncSwitch refreshed.");
             logger.info("## start the canal client adapters.");
 
-            dataSyncHandle = new RdbDataSyncHandle(applicationConfig);
             for(ApplicationConfig.CanalAdapter canalAdapter : applicationConfig.getCanalAdapters()) {
                 for(ApplicationConfig.Group group : canalAdapter.getGroups()) {
                     for(DestDataSourceConfig destDataSourceConfig : group.getOuterAdapters()) {

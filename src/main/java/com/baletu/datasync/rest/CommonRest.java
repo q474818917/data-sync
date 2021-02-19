@@ -2,8 +2,12 @@ package com.baletu.datasync.rest;
 
 import com.baletu.datasync.common.EtlLock;
 import com.baletu.datasync.common.Result;
+import com.baletu.datasync.config.ApplicationConfig;
+import com.baletu.datasync.service.DataSyncHandle;
+import com.baletu.datasync.service.RdbDataSyncHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +28,8 @@ public class CommonRest {
     @Resource
     private EtlLock etlLock;
 
-
+    @Autowired
+    private DataSyncHandle dataSyncHandle;
 
     /**
      * ETL curl http://127.0.0.1:8081/oracle1/mytest_user.yml -X POST
@@ -44,14 +49,12 @@ public class CommonRest {
             return result;
         }*/
         try {
-
             try {
                 List<String> paramArray = null;
                 if (params != null) {
                     paramArray = Arrays.asList(params.trim().split(";"));
                 }
-                //return adapter.sync(task, paramArray);
-                return null;
+                return dataSyncHandle.etl(task, paramArray);
             } finally {
 
             }

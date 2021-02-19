@@ -9,6 +9,8 @@ import com.baletu.datasync.loader.ConfigLoader;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Component
 public class RdbDataSyncHandle implements DataSyncHandle {
 
     private static Logger logger              = LoggerFactory.getLogger(RdbDataSyncHandle.class);
@@ -41,11 +44,8 @@ public class RdbDataSyncHandle implements DataSyncHandle {
         return mappingConfigCache;
     }
 
+    @Autowired
     private ApplicationConfig applicationConfig;
-
-    public RdbDataSyncHandle(ApplicationConfig applicationConfig) {
-        this.applicationConfig = applicationConfig;
-    }
 
     @Override
     public void init(DestDataSourceConfig destDataSourceConfig) {
@@ -124,8 +124,38 @@ public class RdbDataSyncHandle implements DataSyncHandle {
 
     @Override
     public Result etl(String task, List<String> params) {
+        Result etlResult = new Result();
         MappingConfig mappingConfig = rdbMapping.get(task);
-
-        return null;
+        RdbDataService rdbDataService = new RdbDataService(dataSource, mappingConfig);
+        if (mappingConfig != null) {
+            return rdbDataService.importData(params);
+        } else {
+            StringBuilder resultMsg = new StringBuilder();
+            boolean resSucc = true;
+            for (MappingConfig configTmp : rdbMapping.values()) {
+                // 取所有的destination为task的配置
+                if (configTmp.getDestination().equals(task)) {
+                    Result etlRes = rdbDataService.importData(params);
+                    if (!etlRes.getSucceeded()) {
+                        resSucc = false;
+                        resultMsg.append(etlRes.getErrorMessage()).append("\n");
+                    } else {
+                        resultMsg.append(etlRes.getResultMessage()).append("\n");
+                    }
+                }
+            }
+            if (resultMsg.length() > 0) {
+                etlResult.setSucceeded(resSucc);
+                if (resSucc) {
+                    etlResult.setResultMessage(resultMsg.toString());
+                } else {
+                    etlResult.setErrorMessage(resultMsg.toString());
+                }
+                return etlResult;
+            }
+        }
+        etlResult.setSucceeded(false);
+        etlResult.setErrorMessage("Task not found");
+        return etlResult;
     }
 }

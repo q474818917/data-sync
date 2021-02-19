@@ -48,7 +48,7 @@ data.conf:
 
   srcDataSources:
     defaultDS:
-      url: jdbc:mysql://127.0.0.1:3306/user?useSSL=true&serverTimezone=UTC
+      url: jdbc:mysql://127.0.0.1:3306/canal_manager?useSSL=false&serverTimezone=UTC
       username: root
       password: root
   canalAdapters:
@@ -56,12 +56,12 @@ data.conf:
     groups:
     - groupId: g1
       outerAdapters:
-      - name: logger
+      #- name: logger
       - name: rdb
         key: mysql1
         properties:
           jdbc.driverClassName: com.mysql.jdbc.Driver
-          jdbc.url: jdbc:mysql://127.0.0.1:3306/test?useSSL=true&serverTimezone=UTC
+          jdbc.url: jdbc:mysql://127.0.0.1:3306/test?useSSL=false&serverTimezone=UTC
           jdbc.username: root
           jdbc.password: root
 #      - name: rdb

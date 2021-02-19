@@ -7,14 +7,14 @@ dbMapping:
   database: canal_manager
   table: canal_user
   sql: "select * from user"
-  targetTable: person
+  targetTable: canal_user
   targetPk:
     id: id
 #  mapAll: true
   targetColumns:
     id:
     # user_id: idGen
-    first_name:
+    username:
   etlCondition: "where c_time>={}"
   commitBatch: 3000 # 批量提交的大小
 
