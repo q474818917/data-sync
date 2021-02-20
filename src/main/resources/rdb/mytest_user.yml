@@ -5,8 +5,8 @@ outerAdapterKey: mysql1
 concurrent: true
 dbMapping:
   database: test
-  table: person
-  sql: "select * from person"
+  table: user
+  sql: "select * from user"
   targetTable: person2
   targetIdKey: id
   targetPk:
@@ -15,7 +15,7 @@ dbMapping:
   targetColumns:
     id:
     #user_id: idGen
-    username: first_name
+    username: mobile
   etlCondition: "where c_time>={}"
   commitBatch: 3000 # 批量提交的大小
 

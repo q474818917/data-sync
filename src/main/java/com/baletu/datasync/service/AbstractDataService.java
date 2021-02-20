@@ -9,6 +9,7 @@ import com.baletu.datasync.config.MappingConfig;
 import com.baletu.datasync.support.DataIdGen;
 import com.baletu.datasync.support.Util;
 import com.google.common.base.Joiner;
+import com.sankuai.inf.leaf.IDGen;
 import com.sankuai.inf.leaf.service.SegmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +28,12 @@ public abstract class AbstractDataService {
     private String        type;
     private MappingConfig mapping;
     private final long    CNT_PER_TASK = 10000L;
-    protected SegmentService segmentService;
+    protected IDGen idGen;
 
     public AbstractDataService(MappingConfig mapping, LeafConfig leafConfig) {
         this.mapping = mapping;
         if(leafConfig != null) {
-            segmentService = DataIdGen.getInstance(leafConfig);
+            idGen = DataIdGen.getInstance(leafConfig);
         }
     }
 

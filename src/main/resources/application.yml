@@ -48,9 +48,9 @@ data.conf:
 
   srcDataSources:
     defaultDS:
-      url: jdbc:mysql://127.0.0.1:3306/test?useSSL=false&serverTimezone=UTC
-      username: root
-      password: root
+      url: jdbc:mysql://192.168.60.179:3306/baletoo?useSSL=false&serverTimezone=UTC
+      username: dev
+      password: Pie8YihiEspQhtb3
   canalAdapters:
   - instance: example # canal instance Name or mq topic name
     groups:

@@ -1,6 +1,7 @@
 package com.baletu.datasync.support;
 
 import com.baletu.datasync.config.LeafConfig;
+import com.sankuai.inf.leaf.IDGen;
 import com.sankuai.inf.leaf.exception.InitException;
 import com.sankuai.inf.leaf.service.SegmentService;
 
@@ -8,15 +9,15 @@ import java.sql.SQLException;
 
 public class DataIdGen {
 
-    private static SegmentService segmentService;
+    private static IDGen idGen;
 
-    public static SegmentService getInstance(LeafConfig leafConfig) {
-        if(segmentService == null){
+    public static IDGen getInstance(LeafConfig leafConfig) {
+        if(idGen == null){
             synchronized(DataIdGen.class) {
-                if(segmentService == null) {
+                if(idGen == null) {
                     try {
-                        segmentService = new SegmentService(leafConfig.getSegment().getUrl(),
-                                leafConfig.getSegment().getUsername(), leafConfig.getSegment().getPassword());
+                        idGen = new SegmentService(leafConfig.getSegment().getUrl(),
+                                leafConfig.getSegment().getUsername(), leafConfig.getSegment().getPassword()).getIdGen();
                     } catch (SQLException e) {
                         e.printStackTrace();
                     } catch (InitException e) {
@@ -25,7 +26,7 @@ public class DataIdGen {
                 }
             }
         }
-        return segmentService;
+        return idGen;
     }
 
 }

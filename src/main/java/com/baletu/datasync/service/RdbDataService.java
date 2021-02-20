@@ -106,7 +106,7 @@ public class RdbDataService extends AbstractDataService {
 
                             pstmt.clearParameters();
 
-                            // 删除数据
+                            /*// 删除数据
                             Map<String, Object> pkVal = new LinkedHashMap<>();
                             StringBuilder deleteSql = new StringBuilder(
                                     "DELETE FROM " + SyncUtil.getDbTableName(dbMapping) + " WHERE ");
@@ -117,7 +117,7 @@ public class RdbDataService extends AbstractDataService {
                                     pstmt2.setObject(k++, val);
                                 }
                                 pstmt2.execute();
-                            }
+                            }*/
 
                             int i = 1;
                             for (Map.Entry<String, String> entry : columnsMap.entrySet()) {
@@ -132,7 +132,7 @@ public class RdbDataService extends AbstractDataService {
                                 Object value = null;
 
                                 if(keyColumnList.contains(targetClolumnName.toLowerCase())) {
-                                    com.sankuai.inf.leaf.common.Result result = segmentService.getIdGen().get("leaf-segment-test");
+                                    com.sankuai.inf.leaf.common.Result result = idGen.get("leaf-segment-test");
                                     Object sourceValue = rs.getObject(srcColumnName);
                                     value = result.getId();
                                     sourceValueMap.put(srcColumnName, sourceValue);
