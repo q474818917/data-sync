@@ -1,5 +1,6 @@
 package com.baletu.datasync.rest;
 
+import com.baletu.datasync.client.DataRocketMQClient;
 import com.baletu.datasync.common.EtlLock;
 import com.baletu.datasync.common.Result;
 import com.baletu.datasync.config.ApplicationConfig;
@@ -8,10 +9,7 @@ import com.baletu.datasync.service.RdbDataSyncHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -61,5 +59,29 @@ public class CommonRest {
         } finally {
             //etlLock.unlock(ETL_LOCK_ZK_NODE + type + "-" + lockKey);
         }
+    }
+
+    /**
+     * 启动Binlog MQ 监听
+     * @return
+     */
+    @GetMapping("/binlog/start")
+    public Result syncSwitch() {
+        Result result = new Result();
+        try {
+            DataRocketMQClient.lock.lock();
+            DataRocketMQClient.condition.signalAll();
+            result.setSucceeded(true);
+            result.setResultMessage("操作成功");
+        }catch(Exception e) {
+            logger.error(e.getMessage(), e);
+            result.setSucceeded(false);
+            result.setResultMessage("操作失败");
+        }finally {
+            DataRocketMQClient.lock.unlock();
+        }
+
+        return result;
+
     }
 }

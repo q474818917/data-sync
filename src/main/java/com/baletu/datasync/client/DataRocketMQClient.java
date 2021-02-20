@@ -11,6 +11,9 @@ import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class DataRocketMQClient {
@@ -26,6 +29,9 @@ public class DataRocketMQClient {
     private Thread.UncaughtExceptionHandler handler = (t, e) -> logger.error("parse events has an error", e);
 
     private MessageHandle messageHandle;
+
+    public static Lock lock = new ReentrantLock();
+    public static Condition condition = lock.newCondition();
 
     public DataRocketMQClient(String nameServers, String topic, String groupId) {
         connector = new RocketMQCanalConnector(nameServers, topic, groupId, 500, true);
@@ -72,7 +78,10 @@ public class DataRocketMQClient {
             try {
                 connector.connect();
                 connector.subscribe();
+                lock.lock();
+                condition.await();
                 while (running) {
+
                     List<FlatMessage> messages = connector.getFlatList(100L, TimeUnit.MILLISECONDS); // 获取message
                     for (FlatMessage message : messages) {
                         long batchId = message.getId();
@@ -82,7 +91,7 @@ public class DataRocketMQClient {
                             // } catch (InterruptedException e) {
                             // }
                         } else {
-                            switch(message.getType()) {
+                            switch (message.getType()) {
                                 case "UPDATE":
                                     this.changeHandleType(DataMessageOperation.HandleType.UPDATE);
                                     break;
@@ -96,11 +105,12 @@ public class DataRocketMQClient {
                             this.messageHandle.execute(message);
                         }
                     }
-
                     connector.ack(); // 提交确认
                 }
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
+            }finally {
+                lock.unlock();
             }
         }
 

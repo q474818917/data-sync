@@ -10,7 +10,7 @@ import javax.annotation.PostConstruct;
 public class DataLauncher {
     protected final static Logger logger  = LoggerFactory.getLogger(DataLauncher.class);
 
-    //@PostConstruct
+    @PostConstruct
     public void init() {
         try {
             final DataRocketMQClient rocketMQClient = new DataRocketMQClient("localhost:9876",
@@ -34,8 +34,8 @@ public class DataLauncher {
                     logger.info("## Rocketmq consumer is down.");
                 }
             }));
-            while (DataRocketMQClient.running)
-                ;
+            /*while (DataRocketMQClient.running)
+                ;*/
         } catch (Throwable e) {
             logger.error("## Something going wrong when starting up the rocketmq consumer:", e);
             System.exit(0);
