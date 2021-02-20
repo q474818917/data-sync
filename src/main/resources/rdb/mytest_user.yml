@@ -4,26 +4,26 @@ groupId: g1
 outerAdapterKey: mysql1
 concurrent: true
 dbMapping:
-  database: canal_manager
-  table: canal_user
-  sql: "select * from user"
-  targetTable: canal_user
+  database: test
+  table: person
+  sql: "select * from person"
+  targetTable: person2
+  targetIdKey: id
   targetPk:
     id: id
 #  mapAll: true
   targetColumns:
     id:
-    # user_id: idGen
-    username:
+    #user_id: idGen
+    username: first_name
   etlCondition: "where c_time>={}"
   commitBatch: 3000 # 批量提交的大小
 
 useMapping:
   table: user_ref
   columns:
-     id:
-     s_user_id:
-     d_user_id:
+     s_user_id: id
+     d_user_id: id
      source: 1
 
 ## Mirror schema synchronize config

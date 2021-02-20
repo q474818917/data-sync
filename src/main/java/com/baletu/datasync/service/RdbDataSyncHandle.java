@@ -4,6 +4,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.baletu.datasync.common.Result;
 import com.baletu.datasync.config.ApplicationConfig;
 import com.baletu.datasync.config.DestDataSourceConfig;
+import com.baletu.datasync.config.LeafConfig;
 import com.baletu.datasync.config.MappingConfig;
 import com.baletu.datasync.loader.ConfigLoader;
 import org.apache.commons.lang.StringUtils;
@@ -46,6 +47,9 @@ public class RdbDataSyncHandle implements DataSyncHandle {
 
     @Autowired
     private ApplicationConfig applicationConfig;
+
+    @Autowired
+    private LeafConfig leafConfig;
 
     @Override
     public void init(DestDataSourceConfig destDataSourceConfig) {
@@ -126,7 +130,7 @@ public class RdbDataSyncHandle implements DataSyncHandle {
     public Result etl(String task, List<String> params) {
         Result etlResult = new Result();
         MappingConfig mappingConfig = rdbMapping.get(task);
-        RdbDataService rdbDataService = new RdbDataService(dataSource, mappingConfig);
+        RdbDataService rdbDataService = new RdbDataService(dataSource, mappingConfig, leafConfig);
         if (mappingConfig != null) {
             return rdbDataService.importData(params);
         } else {

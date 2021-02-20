@@ -2,18 +2,20 @@ package com.baletu.datasync.service;
 
 import com.baletu.datasync.common.Result;
 import com.baletu.datasync.config.ApplicationConfig;
+import com.baletu.datasync.config.LeafConfig;
 import com.baletu.datasync.config.MappingConfig;
 import com.baletu.datasync.support.SyncUtil;
 import com.baletu.datasync.support.Util;
+import com.google.common.collect.Lists;
+import com.sankuai.inf.leaf.service.SegmentService;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RdbDataService extends AbstractDataService {
@@ -23,10 +25,10 @@ public class RdbDataService extends AbstractDataService {
     private DataSource    targetDS;
     private MappingConfig config;
 
-    public RdbDataService(DataSource targetDS, MappingConfig config){
-        super(config);
+    public RdbDataService(DataSource targetDS, MappingConfig mappingConfig, LeafConfig leafConfig){
+        super(mappingConfig, leafConfig);
         this.targetDS = targetDS;
-        this.config = config;
+        this.config = mappingConfig;
     }
 
     /**
@@ -34,7 +36,8 @@ public class RdbDataService extends AbstractDataService {
      */
     public Result importData(List<String> params) {
         MappingConfig.DbMapping dbMapping = config.getDbMapping();
-        String sql = "SELECT * FROM " + dbMapping.getDatabase() + "." + dbMapping.getTable();
+        //String sql = "SELECT * FROM " + dbMapping.getDatabase() + "." + dbMapping.getTable();
+        String sql = dbMapping.getSql();
         return importData(sql, params);
     }
 
@@ -69,6 +72,10 @@ public class RdbDataService extends AbstractDataService {
 
             //执行原表数据，根据上一步的字段进行拼接SQL
             Util.sqlRS(srcDS, sql, values, rs -> {
+                List<String> keyColumnList = Lists.newArrayList();
+                if(StringUtils.isNotEmpty(dbMapping.getTargetIdKey())) {
+                    keyColumnList = Arrays.asList(dbMapping.getTargetIdKey().split(","));
+                }
                 int idx = 1;
 
                 try {
@@ -93,6 +100,9 @@ public class RdbDataService extends AbstractDataService {
 
                         while (rs.next()) {
                             completed = false;
+
+                            Map<String, Object> sourceValueMap = new LinkedHashMap<>();
+                            Map<String, Object> targetValueMap = new LinkedHashMap<>();
 
                             pstmt.clearParameters();
 
@@ -119,7 +129,20 @@ public class RdbDataService extends AbstractDataService {
 
                                 Integer type = columnType.get(targetClolumnName.toLowerCase());
 
-                                Object value = rs.getObject(srcColumnName);
+                                Object value = null;
+
+                                if(keyColumnList.contains(targetClolumnName.toLowerCase())) {
+                                    com.sankuai.inf.leaf.common.Result result = segmentService.getIdGen().get("leaf-segment-test");
+                                    Object sourceValue = rs.getObject(srcColumnName);
+                                    value = result.getId();
+                                    sourceValueMap.put(srcColumnName, sourceValue);
+                                    targetValueMap.put(targetClolumnName, value);
+                                }else {
+                                    value = rs.getObject(srcColumnName);
+                                    sourceValueMap.put(srcColumnName, value);
+                                    targetValueMap.put(targetClolumnName, value);
+                                }
+
                                 if (value != null) {
                                     SyncUtil.setPStmt(type, pstmt, value, i);
                                 } else {
@@ -128,7 +151,7 @@ public class RdbDataService extends AbstractDataService {
 
                                 i++;
                             }
-
+                            handleMappingTable(connTarget, sourceValueMap, targetValueMap);
                             pstmt.execute();
                             if (logger.isTraceEnabled()) {
                                 logger.trace("Insert into target table, sql: {}", insertSql);
@@ -181,5 +204,76 @@ public class RdbDataService extends AbstractDataService {
         sql.delete(len - 4, len);
     }
 
+    private void handleMappingTable(Connection connTarget,
+            Map<String, Object> sourceValueMap, Map<String, Object> targetValueMap) {
+        MappingConfig.UseMapping useMapping = this.config.getUseMapping();
+        Map<String, String> columnsMap = new LinkedHashMap<>();
+        try {
+            columnsMap = useMapping.getColumns();
+            StringBuilder insertSql = new StringBuilder();
+            if(useMapping != null) {
 
+                insertSql.append("INSERT INTO ").append(useMapping.getTable()).append(" (");
+                columnsMap
+                        .forEach((targetColumnName, srcColumnName) -> insertSql.append(targetColumnName).append(","));
+
+                int len = insertSql.length();
+                insertSql.delete(len - 1, len).append(") VALUES (");
+                int mapLen = columnsMap.size();
+                for (int i = 0; i < mapLen; i++) {
+                    insertSql.append("?,");
+                }
+                len = insertSql.length();
+                insertSql.delete(len - 1, len).append(")");
+            }
+
+            try (PreparedStatement pstmt = connTarget.prepareStatement(insertSql.toString())) {
+                connTarget.setAutoCommit(false);
+
+                int i = 1;
+
+                for(Map.Entry<String, Object> entry : sourceValueMap.entrySet()) {
+                    String sourceClolumnName = entry.getKey();
+                    Object sourceColumnValue = entry.getValue();
+                    if(columnsMap.values().contains(sourceClolumnName)) {
+                        SyncUtil.setPStmt(Types.BIGINT, pstmt, sourceColumnValue, i);
+                        i++;
+                    }
+                }
+                for (Map.Entry<String, Object> entry : targetValueMap.entrySet()) {
+                    String targetClolumnName = entry.getKey();
+                    Object targetColumnValue = entry.getValue();
+                    if(columnsMap.values().contains(targetClolumnName)) {
+                        SyncUtil.setPStmt(Types.BIGINT, pstmt, targetColumnValue, i);
+                        i++;
+                    }
+                }
+                if(columnsMap.keySet().contains("source")) {
+                    SyncUtil.setPStmt(Types.BIGINT, pstmt, columnsMap.get("source"), i);
+                }
+
+                pstmt.execute();
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Insert into target table, sql: {}", insertSql);
+                }
+
+                /*if (idx % dbMapping.getCommitBatch() == 0) {
+                    connTarget.commit();
+                    completed = true;
+                }
+                idx++;
+                impCount.incrementAndGet();
+                if (logger.isDebugEnabled()) {
+                    logger.debug("successful import count:" + impCount.get());
+                }*/
+            }
+            /*if (!completed) {
+                connTarget.commit();
+            }*/
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+
+    }
 }

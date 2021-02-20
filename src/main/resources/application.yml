@@ -48,7 +48,7 @@ data.conf:
 
   srcDataSources:
     defaultDS:
-      url: jdbc:mysql://127.0.0.1:3306/canal_manager?useSSL=false&serverTimezone=UTC
+      url: jdbc:mysql://127.0.0.1:3306/test?useSSL=false&serverTimezone=UTC
       username: root
       password: root
   canalAdapters:
@@ -95,3 +95,12 @@ data.conf:
 #          key: kudu
 #          properties:
 #            kudu.master.address: 127.0.0.1 # ',' split multi address
+leaf:
+  name: default
+  segment:
+    enable: true
+  #leaf.zk.list=127.0.0.1:2181
+    url: jdbc:mysql://127.0.0.1:3306/leaf?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: root
+    password: root
+    drivername: com.mysql.cj.jdbc.Driver

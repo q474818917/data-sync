@@ -23,6 +23,16 @@ public class MappingConfig {
 
     private DbMapping dbMapping;          // db映射配置
 
+    private UseMapping useMapping;        // 记录中间表
+
+    public UseMapping getUseMapping() {
+        return useMapping;
+    }
+
+    public void setUseMapping(UseMapping useMapping) {
+        this.useMapping = useMapping;
+    }
+
     public String getDataSourceKey() {
         return dataSourceKey;
     }
@@ -90,6 +100,7 @@ public class MappingConfig {
         private String table;                                   // 表名
         private Map<String, String> targetPk        = new LinkedHashMap<>(); // 目标表主键字段
         private boolean             mapAll          = false;                 // 映射所有字段
+        private String targetIdKey;
         private String targetDb;                                // 目标库名
         private String targetTable;                             // 目标表名
         private Map<String, String> targetColumns;                           // 目标表字段映射
@@ -100,6 +111,7 @@ public class MappingConfig {
 
         private int                 readBatch       = 5000;
         private int                 commitBatch     = 5000;                  // etl等批量提交大小
+        private String sql;
 
         private Map<String, String> allMapColumns;
 
@@ -212,6 +224,43 @@ public class MappingConfig {
 
         public void setAllMapColumns(Map<String, String> allMapColumns) {
             this.allMapColumns = allMapColumns;
+        }
+
+        public String getSql() {
+            return sql;
+        }
+
+        public void setSql(String sql) {
+            this.sql = sql;
+        }
+
+        public String getTargetIdKey() {
+            return targetIdKey;
+        }
+
+        public void setTargetIdKey(String targetIdKey) {
+            this.targetIdKey = targetIdKey;
+        }
+    }
+
+    public static class UseMapping {
+        private String              table;                                   // 表名
+        private Map<String, String> columns;                                 // 目标表字段映射
+
+        public String getTable() {
+            return table;
+        }
+
+        public void setTable(String table) {
+            this.table = table;
+        }
+
+        public Map<String, String> getColumns() {
+            return columns;
+        }
+
+        public void setColumns(Map<String, String> columns) {
+            this.columns = columns;
         }
     }
 }
