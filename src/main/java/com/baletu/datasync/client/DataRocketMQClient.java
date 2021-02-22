@@ -101,6 +101,8 @@ public class DataRocketMQClient {
                                 case "DELETE":
                                     this.changeHandleType(DataMessageOperation.HandleType.DELETE);
                                     break;
+                                case "DDL":
+                                    break;
                             }
                             this.messageHandle.execute(message);
                         }

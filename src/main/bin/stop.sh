@@ -37,24 +37,24 @@ get_pid() {
 }
 
 base=`dirname $0`/..
-pidfile=$base/bin/adapter.pid
+pidfile=$base/bin/sync.pid
 if [ ! -f "$pidfile" ];then
-	echo "canal-adapter is not running. exists"
+	echo "data-sync is not running. exists"
 	exit
 fi
 
 pid=`cat $pidfile`
 if [ "$pid" == "" ] ; then
-	pid=`get_pid "appName=canal-adapter"`
+	pid=`get_pid "appName=data-sync"`
 fi
 
-echo -e "`hostname`: stopping canal $pid ... "
+echo -e "`hostname`: stopping sync $pid ... "
 kill $pid
 
 LOOPS=0
 while (true); 
 do 
-	gpid=`get_pid "appName=canal-adapter" "$pid"`
+	gpid=`get_pid "appName=data-sync" "$pid"`
     if [ "$gpid" == "" ] ; then
     	echo "Oook! cost:$LOOPS"
     	`rm $pidfile`
