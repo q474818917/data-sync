@@ -32,7 +32,7 @@
         <dependency>
             <groupId>com.sankuai.inf.leaf</groupId>
             <artifactId>leaf-core</artifactId>
-            <version>1.0.1-release</version>
+            <version>1.0.1-RELEASE</version>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>

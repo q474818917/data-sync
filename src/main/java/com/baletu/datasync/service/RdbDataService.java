@@ -152,9 +152,10 @@ public class RdbDataService extends AbstractDataService {
                                 i++;
                             }
                             handleMappingTable(connTarget, sourceValueMap, targetValueMap);
+
                             pstmt.execute();
                             if (logger.isTraceEnabled()) {
-                                logger.trace("Insert into target table, sql: {}", insertSql);
+                                logger.trace("Insert into target table, sql: {}", pstmt.toString());
                             }
 
                             if (idx % dbMapping.getCommitBatch() == 0) {
@@ -254,7 +255,7 @@ public class RdbDataService extends AbstractDataService {
 
                 pstmt.execute();
                 if (logger.isTraceEnabled()) {
-                    logger.trace("Insert into target table, sql: {}", insertSql);
+                    logger.trace("Insert into Mapping table, sql: {}", pstmt.toString());
                 }
 
                 /*if (idx % dbMapping.getCommitBatch() == 0) {

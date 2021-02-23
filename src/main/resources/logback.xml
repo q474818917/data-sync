@@ -35,7 +35,7 @@
 	</appender>
 
 	<logger name="com.baletu.datasync" additivity="false">
-		<level value="DEBUG" />
+		<level value="TRACE" />
 		<appender-ref ref="STDOUT"/>
 		<appender-ref ref="SYNC-ROOT" />
 	</logger>
